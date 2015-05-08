@@ -1,11 +1,10 @@
 class Stylist
 
-  attr_reader(:name, :id, :client_id)
+  attr_reader(:name, :id)
 
   define_method(:initialize) do |attributes|
     @name = attributes.fetch(:name)
     @id = attributes.fetch(:id)
-    @client_id = nil
   end
 
   define_singleton_method(:all) do
@@ -43,27 +42,16 @@ class Stylist
 
   define_method(:delete) do
     DB.exec("DELETE FROM stylists WHERE id = #{self.id};")
+    DB.exec("DELETE FROM clients WHERE stylist_id = #{self.id};")
   end
-
-  # define_method(:clients) do
-  #   stylist_clients = []
-  #   results = DB.exec("SELECT client_id FROM stylists WHERE id = #{self.id};")
-  #   results.each do |result|
-  #     client_id = result.fetch("client_id").to_i
-  #     client = DB.exec("SELECT * FROM clients WHERE id = #{client_id};")
-  #     name = client.first.fetch("name")
-  #     stylist_clients.push(Client.new({:name => name, :id => client_id}))
-  #   end
-  #   stylist_clients
-  # end
 
   define_method(:clients) do
     stylist_clients = []
-    results = DB.exec("SELECT client_id FROM stylists WHERE id = #{self.id()};")
-    results.each() do |result|
-      name = result.fetch("name")
-      client_id = result.fetch("client_id").to_i()
-      stylist_clients.push(Client.new({:name => name, :client_id => client_id}))
+    clients = DB.exec("SELECT * FROM clients WHERE stylist_id = #{self.id()};")
+    clients.each() do |client|
+      name = client.fetch("name")
+      stylist_id = client.fetch("stylist_id").to_i
+      stylist_clients.push(Client.new({:name => name, :stylist_id => stylist_id}))
     end
     stylist_clients
   end
